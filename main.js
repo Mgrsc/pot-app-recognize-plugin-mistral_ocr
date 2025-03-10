@@ -1,49 +1,43 @@
 async function recognize(base64, lang, options) {
-    const { config, utils } = options;
-    const { tauriFetch } = utils;
-    let { apikey, engine } = config;
-    base64 = `data:image/png;base64,${base64}`;
+    const { utils } = options;
+    const { tauriFetch: fetch } = utils;
+    const { apiKey, model = "mistral-ocr-latest" } = options.config;
 
-    if (apikey === undefined || apikey.length === 0) {
-        throw "apikey not found";
-    }
-    if (engine === undefined || engine.length === 0) {
-        engine = "1";
+    const requestPath = "https://api.mistral.ai/v1/ocr";
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
     }
 
-    let res = await tauriFetch('https://api.ocr.space/parse/image', {
-        method: "POST",
-        header: {
-            apikey,
-            "content-type": "application/x-www-form-urlencoded"
-        },
-        body: {
-            type: "Form",
-            payload: {
-                base64Image: base64,
-                OCREngine: engine,
-                language: lang
-            }
+    const body = {
+        model,
+        document: {
+            type: "image_url",
+            image_url: `data:image/jpeg;base64,${base64}`
         }
-    })
+    }
+
+    let res = await fetch(requestPath, {
+        method: 'POST',
+        url: requestPath,
+        headers: headers,
+        body: {
+            type: "Json",
+            payload: body
+        }
+    });
 
     if (res.ok) {
-        const { result } = res.data;
-        const { ErrorMessage, ParsedResults } = result;
-        if (ErrorMessage) {
-            throw ErrorMessage;
-        }
-        if (ParsedResults) {
-            let target = "";
-            for (let i in ParsedResults) {
-                const { ParsedText } = i;
-                target += ParsedText;
-            }
-            return target;
+        let result = res.data;
+
+        // 只提取第一个页面的markdown内容
+        if (result.pages && result.pages.length > 0) {
+            return result.pages[0].markdown;
         } else {
-            throw JSON.stringify(result);
+            return "无法识别文本内容";
         }
     } else {
-        throw JSON.stringify(res);
+        throw `Http Request Error\nHttp Status: ${res.status}\n${JSON.stringify(res.data)}`;
     }
 }
