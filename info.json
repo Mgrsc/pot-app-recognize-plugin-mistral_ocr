@@ -3,7 +3,7 @@
   "plugin_type": "recognize",
   "icon": "mistral.svg",
   "display": "Mistral-OCR",
-  "homepage": "https://github.com/Mgrsc/pot-app-recognize-plugin-mistral-ocr",
+  "homepage": "https://github.com/Mgrsc/pot-app-recognize-plugin-mistral_ocr",
   "needs": [
     {
       "key": "model",
