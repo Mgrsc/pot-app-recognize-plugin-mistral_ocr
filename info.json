@@ -8,10 +8,7 @@
     {
       "key": "model",
       "display": "模型",
-      "type": "select",
-      "options": {
-        "mistral-ocr-latest": "Mistral-OCR"
-      }
+      "type": "input"
     },
     {
       "key": "apiKey",
